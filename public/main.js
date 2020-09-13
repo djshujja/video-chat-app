@@ -5,6 +5,8 @@ const myPeer = new Peer(undefined, {
   port: "3001",
 });
 
+const peers = [];
+
 const myVideo = document.createElement("video");
 myVideo.muted = true;
 
@@ -18,6 +20,7 @@ navigator.mediaDevices
 
     myPeer.on("call", (call) => {
       call.answer(stream);
+      const video = document.createElement("video");
       call.on("stream", (userVideoStream) => {
         addVideoStream(video, userVideoStream);
       });
@@ -34,6 +37,10 @@ myPeer.on("open", (id) => {
 
 socket.on("user-connected", (userId) => {
   console.log("user connected " + userId);
+});
+
+socket.on("user-disconnected", (userId) => {
+  if (peers[userId]) peers[userId].close();
 });
 
 function addVideoStream(video, stream) {
@@ -55,4 +62,5 @@ function connectToNewUser(userId, stream) {
   call.on("close", () => {
     video.remove();
   });
+  peers[userId] = call;
 }
